@@ -49,8 +49,8 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.elements (
     atomic_number integer NOT NULL,
-    symbol character varying(2),
-    name character varying(40)
+    symbol character varying(2) NOT NULL,
+    name character varying(40) NOT NULL
 );
 
 
@@ -62,43 +62,102 @@ ALTER TABLE public.elements OWNER TO freecodecamp;
 
 CREATE TABLE public.properties (
     atomic_number integer NOT NULL,
-    type character varying(30),
-    weight numeric(9,6) NOT NULL,
-    melting_point numeric,
-    boiling_point numeric
+    melting_point_celsius numeric NOT NULL,
+    boiling_point_celsius numeric NOT NULL,
+    type_id integer NOT NULL,
+    atomic_mass numeric
 );
 
 
 ALTER TABLE public.properties OWNER TO freecodecamp;
 
 --
+-- Name: types; Type: TABLE; Schema: public; Owner: freecodecamp
+--
+
+CREATE TABLE public.types (
+    type_id integer NOT NULL,
+    type character varying(30) NOT NULL
+);
+
+
+ALTER TABLE public.types OWNER TO freecodecamp;
+
+--
+-- Name: types_type_id_seq; Type: SEQUENCE; Schema: public; Owner: freecodecamp
+--
+
+CREATE SEQUENCE public.types_type_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.types_type_id_seq OWNER TO freecodecamp;
+
+--
+-- Name: types_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: freecodecamp
+--
+
+ALTER SEQUENCE public.types_type_id_seq OWNED BY public.types.type_id;
+
+
+--
+-- Name: types type_id; Type: DEFAULT; Schema: public; Owner: freecodecamp
+--
+
+ALTER TABLE ONLY public.types ALTER COLUMN type_id SET DEFAULT nextval('public.types_type_id_seq'::regclass);
+
+
+--
 -- Data for Name: elements; Type: TABLE DATA; Schema: public; Owner: freecodecamp
 --
 
 INSERT INTO public.elements VALUES (1, 'H', 'Hydrogen');
-INSERT INTO public.elements VALUES (2, 'he', 'Helium');
-INSERT INTO public.elements VALUES (3, 'li', 'Lithium');
+INSERT INTO public.elements VALUES (2, 'He', 'Helium');
+INSERT INTO public.elements VALUES (3, 'Li', 'Lithium');
 INSERT INTO public.elements VALUES (4, 'Be', 'Beryllium');
 INSERT INTO public.elements VALUES (5, 'B', 'Boron');
 INSERT INTO public.elements VALUES (6, 'C', 'Carbon');
 INSERT INTO public.elements VALUES (7, 'N', 'Nitrogen');
 INSERT INTO public.elements VALUES (8, 'O', 'Oxygen');
-INSERT INTO public.elements VALUES (1000, 'mT', 'moTanium');
+INSERT INTO public.elements VALUES (9, 'F', 'Fluorine');
+INSERT INTO public.elements VALUES (10, 'Ne', 'Neon');
 
 
 --
 -- Data for Name: properties; Type: TABLE DATA; Schema: public; Owner: freecodecamp
 --
 
-INSERT INTO public.properties VALUES (1, 'nonmetal', 1.008000, -259.1, -252.9);
-INSERT INTO public.properties VALUES (2, 'nonmetal', 4.002600, -272.2, -269);
-INSERT INTO public.properties VALUES (3, 'metal', 6.940000, 180.54, 1342);
-INSERT INTO public.properties VALUES (4, 'metal', 9.012200, 1287, 2470);
-INSERT INTO public.properties VALUES (5, 'metalloid', 10.810000, 2075, 4000);
-INSERT INTO public.properties VALUES (6, 'nonmetal', 12.011000, 3550, 4027);
-INSERT INTO public.properties VALUES (7, 'nonmetal', 14.007000, -210.1, -195.8);
-INSERT INTO public.properties VALUES (8, 'nonmetal', 15.999000, -218, -183);
-INSERT INTO public.properties VALUES (1000, 'metalloid', 1.000000, 10, 100);
+INSERT INTO public.properties VALUES (3, 180.54, 1342, 1, 6.94);
+INSERT INTO public.properties VALUES (4, 1287, 2470, 1, 9.0122);
+INSERT INTO public.properties VALUES (5, 2075, 4000, 2, 10.81);
+INSERT INTO public.properties VALUES (1, -259.1, -252.9, 3, 1.008);
+INSERT INTO public.properties VALUES (2, -272.2, -269, 3, 4.0026);
+INSERT INTO public.properties VALUES (6, 3550, 4027, 3, 12.011);
+INSERT INTO public.properties VALUES (7, -210.1, -195.8, 3, 14.007);
+INSERT INTO public.properties VALUES (8, -218, -183, 3, 15.999);
+INSERT INTO public.properties VALUES (9, -220, -188.1, 3, 18.998);
+INSERT INTO public.properties VALUES (10, -248.6, -246.1, 3, 20.18);
+
+
+--
+-- Data for Name: types; Type: TABLE DATA; Schema: public; Owner: freecodecamp
+--
+
+INSERT INTO public.types VALUES (1, 'metal');
+INSERT INTO public.types VALUES (2, 'metalloid');
+INSERT INTO public.types VALUES (3, 'nonmetal');
+
+
+--
+-- Name: types_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: freecodecamp
+--
+
+SELECT pg_catalog.setval('public.types_type_id_seq', 3, true);
 
 
 --
@@ -131,6 +190,46 @@ ALTER TABLE ONLY public.properties
 
 ALTER TABLE ONLY public.properties
     ADD CONSTRAINT properties_pkey PRIMARY KEY (atomic_number);
+
+
+--
+-- Name: types types_pkey; Type: CONSTRAINT; Schema: public; Owner: freecodecamp
+--
+
+ALTER TABLE ONLY public.types
+    ADD CONSTRAINT types_pkey PRIMARY KEY (type_id);
+
+
+--
+-- Name: elements uq_elements_name; Type: CONSTRAINT; Schema: public; Owner: freecodecamp
+--
+
+ALTER TABLE ONLY public.elements
+    ADD CONSTRAINT uq_elements_name UNIQUE (name);
+
+
+--
+-- Name: elements uq_elements_symbol; Type: CONSTRAINT; Schema: public; Owner: freecodecamp
+--
+
+ALTER TABLE ONLY public.elements
+    ADD CONSTRAINT uq_elements_symbol UNIQUE (symbol);
+
+
+--
+-- Name: properties properties_atomic_number_fkey; Type: FK CONSTRAINT; Schema: public; Owner: freecodecamp
+--
+
+ALTER TABLE ONLY public.properties
+    ADD CONSTRAINT properties_atomic_number_fkey FOREIGN KEY (atomic_number) REFERENCES public.elements(atomic_number);
+
+
+--
+-- Name: properties properties_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: freecodecamp
+--
+
+ALTER TABLE ONLY public.properties
+    ADD CONSTRAINT properties_type_id_fkey FOREIGN KEY (type_id) REFERENCES public.types(type_id);
 
 
 --
